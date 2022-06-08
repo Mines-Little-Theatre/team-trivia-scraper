@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"flag"
 	"io"
 	"log"
 	"mime/multipart"
@@ -16,23 +14,10 @@ type Config struct {
 }
 
 func main() {
-	var configFileName string
-	flag.StringVar(&configFileName, "config", "team-trivia-scraper-config.json", "Location of configuration file")
-	flag.Parse()
-
-	var config Config
-	configFile, err := os.Open(configFileName)
-	if err != nil {
-		log.Fatalln("failed to open config file:", err)
-	}
-	configData, err := io.ReadAll(configFile)
-	configFile.Close()
-	if err != nil {
-		log.Fatalln("failed to read config file:", err)
-	}
-	err = json.Unmarshal(configData, &config)
-	if err != nil {
-		log.Fatalln("failed to unmarshal config file:", err)
+	config := Config{
+		WebhookURL:          readEnv("WEBHOOK_URL"),
+		FreeAnswerMessage:   readEnv("FREE_ANSWER_MESSAGE"),
+		NoFreeAnswerMessage: readEnv("NO_FREE_ANSWER_MESSAGE"),
 	}
 
 	body, bodyWriter := io.Pipe()
@@ -41,4 +26,13 @@ func main() {
 
 	go writeMessage(&config, bodyWriter, mpartWriter)
 	executeWebhook(&config, body, mpartBoundary)
+}
+
+func readEnv(key string) string {
+	var result string
+	var ok bool
+	if result, ok = os.LookupEnv(key); !ok {
+		log.Fatalf("please set the %s environment variable", key)
+	}
+	return result
 }

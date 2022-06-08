@@ -10,7 +10,7 @@ import (
 func executeWebhook(config *Config, body *io.PipeReader, mpartBoundary string) {
 	req, err := http.NewRequest("POST", config.WebhookURL, body)
 	if err != nil {
-		log.Fatalln("failed to create Discord request:", err)
+		log.Fatalf("failed to create Discord request: %v", err)
 	}
 
 	req.Header.Add("Content-Type", fmt.Sprintf("multipart/form-data;boundary=%s", mpartBoundary))
@@ -22,9 +22,9 @@ func executeWebhook(config *Config, body *io.PipeReader, mpartBoundary string) {
 		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
-			log.Fatalln("API call failed with code", resp.StatusCode, "and reading the response also failed:", err)
+			log.Fatalf("API call failed (%s) and reading the response also failed: %v", resp.Status, err)
 		} else {
-			log.Fatalln("API call failed with code", resp.StatusCode, "and responded:", string(body))
+			log.Fatalf("API call failed (%s) and responded: %s", resp.Status, body)
 		}
 	}
 	resp.Body.Close()
