@@ -3,6 +3,7 @@ package bot
 import (
 	"log"
 
+	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/embeds"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -21,6 +22,10 @@ func Run(config Config) {
 
 	data := new(discordgo.WebhookParams)
 	data.Content = config.Message
+
+	data.Embeds = embeds.CollectEmbeds(
+		embeds.AnswerOfTheNight,
+	)
 
 	_, err = session.WebhookExecute(config.WebhookID, config.WebhookToken, false, data)
 	if err != nil {
