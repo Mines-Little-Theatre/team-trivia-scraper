@@ -1,21 +1,29 @@
 package bot
 
 import (
-	"io"
-	"mime/multipart"
+	"log"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 type Config struct {
-	WebhookURL          string
-	FreeAnswerMessage   string
-	NoFreeAnswerMessage string
+	WebhookID    string
+	WebhookToken string
+	Message      string
 }
 
 func Run(config Config) {
-	body, bodyWriter := io.Pipe()
-	mpartWriter := multipart.NewWriter(bodyWriter)
-	mpartBoundary := mpartWriter.Boundary()
+	session, err := discordgo.New("")
+	if err != nil {
+		// reading the source code, it appears that this will never actually return an error
+		log.Fatalln(err)
+	}
 
-	go writeMessage(&config, bodyWriter, mpartWriter)
-	executeWebhook(&config, body, mpartBoundary)
+	data := new(discordgo.WebhookParams)
+	data.Content = config.Message
+
+	_, err = session.WebhookExecute(config.WebhookID, config.WebhookToken, false, data)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }

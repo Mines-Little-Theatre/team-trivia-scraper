@@ -11,9 +11,9 @@ import (
 
 func main() {
 	config := bot.Config{
-		WebhookURL:          readEnv("WEBHOOK_URL"),
-		FreeAnswerMessage:   readEnv("FREE_ANSWER_MESSAGE"),
-		NoFreeAnswerMessage: readEnv("NO_FREE_ANSWER_MESSAGE"),
+		WebhookID:    readEnv("TRIVIA_WEBHOOK_ID"),
+		WebhookToken: readEnv("TRIVIA_WEBHOOK_TOKEN"),
+		Message:      readEnv("TRIVIA_MESSAGE"),
 	}
 
 	lambda.Start(func(context.Context, any) ([]byte, error) {
