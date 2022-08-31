@@ -40,7 +40,7 @@ func AnswerOfTheNight(out chan<- *discordgo.MessageEmbed) {
 	z := html.NewTokenizer(resp.Body)
 
 htmlLoop:
-	for anyEmptyStrings(result.Title, result.Description, field.Name, field.Value, result.Image.URL) {
+	for anyEmptyStrings(result.Title, field.Name, field.Value, result.Image.URL) {
 		switch z.Next() {
 		case html.ErrorToken:
 			break htmlLoop
@@ -53,12 +53,6 @@ htmlLoop:
 					log.Println("free answer: no text in the h1")
 				} else {
 					result.Title = string(z.Text())
-				}
-			case bytes.Equal(tagName, []byte("h6")):
-				if z.Next() != html.TextToken {
-					log.Println("free answer: no text in the h6")
-				} else {
-					result.Description = string(z.Text())
 				}
 			case bytes.Equal(tagName, []byte("h3")):
 				if z.Next() != html.StartTagToken {
