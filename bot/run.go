@@ -27,8 +27,12 @@ func Run(config Config) {
 		embeds.AnswerOfTheNight,
 	)
 
+	log.Println("finished collecting embeds, posting")
+
 	_, err = session.WebhookExecute(config.WebhookID, config.WebhookToken, false, data)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	log.Println("finished posting")
 }

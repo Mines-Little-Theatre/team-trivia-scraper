@@ -100,10 +100,14 @@ htmlLoop:
 		if field.Name == "" {
 			// field name is required, and we definitely want the value we have
 			// so put in some placeholder value that's obviously an error
+			log.Println("free answer: no name for field")
 			field.Name = "undefined"
 		}
 
+		log.Println("free answer: the free answer is", field.Value)
 		out <- result
+	} else {
+		log.Println("free answer: no free answer")
 	}
 }
 
