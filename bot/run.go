@@ -40,8 +40,15 @@ func Run(config *Config) error {
 			_, err = session.WebhookExecute(config.WebhookID, config.WebhookToken, false, &discordgo.WebhookParams{
 				Content: config.CryForHelp,
 			})
+			if err != nil {
+				return err
+			}
+
+			log.Println("finished crying for help")
+			return nil
+		} else {
+			return err
 		}
-		return err
 	}
 
 	log.Println("finished posting")
