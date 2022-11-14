@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/net/html"
@@ -90,7 +91,12 @@ htmlLoop:
 					}
 				}
 				if hasFluidClass {
-					result.Image.URL = src
+					src, err := url.JoinPath(freeAnswerURL, src)
+					if err != nil {
+						log.Println("free answer: could not make sense of src", src)
+					} else {
+						result.Image.URL = src
+					}
 				}
 			}
 		}
