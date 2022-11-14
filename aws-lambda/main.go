@@ -12,14 +12,9 @@ import (
 func main() {
 	log.SetFlags(log.Lshortfile)
 
-	config := bot.Config{
-		WebhookID:    utils.ReadEnv("TRIVIA_WEBHOOK_ID"),
-		WebhookToken: utils.ReadEnv("TRIVIA_WEBHOOK_TOKEN"),
-		Message:      utils.ReadEnv("TRIVIA_MESSAGE"),
-	}
+	config := utils.ReadConfig()
 
 	lambda.Start(func(context.Context, any) ([]byte, error) {
-		bot.Run(config)
-		return nil, nil
+		return nil, bot.Run(config)
 	})
 }
