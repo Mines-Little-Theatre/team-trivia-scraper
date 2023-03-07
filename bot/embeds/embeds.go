@@ -1,29 +1,28 @@
 package embeds
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"log"
 
-// EmbedProvider asynchronously provides a MessageEmbed for the output.
-//
-// The function should send a maximum of one embed on the provided channel and close the channel when it is finished.
-type EmbedProvider func(chan<- *discordgo.MessageEmbed)
+	"github.com/Quantaly/shunt"
+	"github.com/bwmarrin/discordgo"
+)
 
-// CollectEmbeds calls the given provider functions and returns a slice of their results in the order that they are passed.
-//
-// If a provider closes its channel without sending an embed, it is skipped in the output.
-//
-// The provider functions are run concurrently.
+// EmbedProvider provides a MessageEmbed for the output.
+type EmbedProvider func() (*discordgo.MessageEmbed, error)
+
+// CollectEmbeds calls the given provider functions in parallel and returns a slice of their results in the order that they are passed.
 func CollectEmbeds(providers ...EmbedProvider) []*discordgo.MessageEmbed {
-	resultChannels := make([]<-chan *discordgo.MessageEmbed, len(providers))
-	for i := range providers {
-		channel := make(chan *discordgo.MessageEmbed, 1)
-		go providers[i](channel)
-		resultChannels[i] = channel
+	tasks := make([]shunt.Task[*discordgo.MessageEmbed], 0, len(providers))
+	for _, f := range providers {
+		tasks = append(tasks, shunt.Do(f))
 	}
 
 	results := make([]*discordgo.MessageEmbed, 0, len(providers))
-	for _, resultChannel := range resultChannels {
-		result, ok := <-resultChannel
-		if ok {
+	for _, task := range tasks {
+		result, err := task.Join()
+		if err != nil {
+			log.Println(err)
+		} else if result != nil {
 			results = append(results, result)
 		}
 	}

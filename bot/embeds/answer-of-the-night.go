@@ -13,13 +13,10 @@ import (
 const freeAnswerURL = "https://teamtrivia.com/free/"
 
 // AnswerOfTheNight is an EmbedProvider that fetches the contents of https://teamtrivia.com/free/
-func AnswerOfTheNight(out chan<- *discordgo.MessageEmbed) {
-	defer close(out)
-
+func AnswerOfTheNight() (*discordgo.MessageEmbed, error) {
 	resp, err := http.Get(freeAnswerURL)
 	if err != nil {
-		log.Println("free answer: failed to create request:", err)
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
@@ -111,9 +108,10 @@ htmlLoop:
 		}
 
 		log.Println("free answer: the free answer is", field.Value)
-		out <- result
+		return result, nil
 	} else {
 		log.Println("free answer: no free answer")
+		return nil, nil
 	}
 }
 
