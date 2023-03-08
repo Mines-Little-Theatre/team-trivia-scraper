@@ -50,26 +50,16 @@ func createEmbed(data freeAnswerData) *discordgo.MessageEmbed {
 	result.Color = 0x00cccc
 
 	if data.date != "" || data.answer != "" {
-		field := new(discordgo.MessageEmbedField)
-
-		if data.date == "" {
-			field.Name = "\u200B" // zero-width space; accepted by Discord as non-empty
-		} else {
-			field.Name = data.date
-		}
-
-		if data.answer == "" {
-			field.Value = "\u200B"
-		} else {
-			field.Value = data.answer
-		}
-
-		result.Fields = []*discordgo.MessageEmbedField{field}
+		result.Fields = []*discordgo.MessageEmbedField{{
+			Name:  data.date,
+			Value: data.answer,
+		}}
 	}
 
 	if data.imageURL != "" {
-		result.Image = new(discordgo.MessageEmbedImage)
-		result.Image.URL = data.imageURL
+		result.Image = &discordgo.MessageEmbedImage{
+			URL: data.imageURL,
+		}
 	}
 
 	return result
