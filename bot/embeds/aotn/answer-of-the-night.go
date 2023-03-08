@@ -45,7 +45,7 @@ func createEmbed(data freeAnswerData) *discordgo.MessageEmbed {
 	result.Type = discordgo.EmbedTypeRich
 
 	result.Title = data.title
-	result.Description = data.blurb
+	// result.Description = data.blurb
 	result.URL = freeAnswerURL
 	result.Color = 0x00cccc
 
