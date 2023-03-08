@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/embeds"
+	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/embeds/aotn"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -26,7 +27,7 @@ func Run(config *Config) error {
 	data.Content = config.Message
 
 	data.Embeds = embeds.CollectEmbeds(
-		embeds.AnswerOfTheNight,
+		aotn.AnswerOfTheNight,
 	)
 
 	log.Println("finished collecting embeds, posting")
