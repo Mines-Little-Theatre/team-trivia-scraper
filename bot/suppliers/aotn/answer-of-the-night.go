@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/net/html"
 )
@@ -14,16 +15,21 @@ type freeAnswerData struct {
 	title, blurb, date, answer, imageURL string
 }
 
-// AnswerOfTheNight is an EmbedProvider that fetches the contents of https://teamtrivia.com/free/
-func AnswerOfTheNight() (*discordgo.MessageEmbed, error) {
+type AnswerOfTheNight struct{}
+
+func init() {
+	suppliers.RegisterSupplier("aotn", AnswerOfTheNight{})
+}
+
+func (a AnswerOfTheNight) SupplyData(context *suppliers.SupplierContext) error {
 	doc, err := fetchDocument()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	data := extractData(doc)
-
-	return createEmbed(data), nil
+	context.AddEmbed("answer", createEmbed(data))
+	return nil
 }
 
 func fetchDocument() (*html.Node, error) {

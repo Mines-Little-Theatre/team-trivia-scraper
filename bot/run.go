@@ -3,8 +3,8 @@ package bot
 import (
 	"log"
 
-	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/embeds"
-	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/embeds/aotn"
+	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers"
+	_ "github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers/aotn"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -23,12 +23,15 @@ func Run(config *Config) error {
 		return err
 	}
 
+	supplierResults := suppliers.RunSuppliers([]string{"aotn"})
+
 	data := new(discordgo.WebhookParams)
 	data.Content = config.Message
 
-	data.Embeds = embeds.CollectEmbeds(
-		aotn.AnswerOfTheNight,
-	)
+	embed, ok := supplierResults.Embeds["aotn:answer"]
+	if ok {
+		data.Embeds = append(data.Embeds, embed)
+	}
 
 	log.Println("finished collecting embeds, posting")
 
