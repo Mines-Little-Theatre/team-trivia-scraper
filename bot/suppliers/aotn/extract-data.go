@@ -11,66 +11,86 @@ import (
 
 type unit struct{}
 
-func extractData(doc *html.Node) freeAnswerData {
-	// title is the content of the only h1
-	// blurb is the content of the only h6
-	// date is the content of the only h3
-	// answer is the content of the only h2
-	// (the terrible header structure is very convenient for this)
-	// and the image url is the src of the only img.img-fluid, which only has the one class
+func extractData(doc *html.Node) (data freeAnswerData) {
+	// title is the content of the first (and only) h1
+	h1 := findNextElementNamed(atom.H1, doc)
+	if h1 == nil {
+		return
+	}
+	data.title = formattedContent(h1)
 
-	var data freeAnswerData
-	extractDataRecursive(&data, doc)
-	return data
+	// blurb is the content of the subsequent h6
+	h6 := findNextElementNamed(atom.H6, h1)
+	if h6 == nil {
+		return
+	}
+	data.blurb = formattedContent(h6)
+
+	// date is the content of the subsequent h3
+	h3 := findNextElementNamed(atom.H3, h6)
+	if h3 == nil {
+		return
+	}
+	data.date = formattedContent(h3)
+
+	// answer is the content of the subsequent h2
+	h2 := findNextElementNamed(atom.H2, h3)
+	if h2 == nil {
+		return
+	}
+	data.answer = formattedContent(h2)
+
+	// (the terrible header structure is very convenient for this)
+	// and the image url is the src of the subsequent img if it (only) has the img-fluid class
+	img := findNextElementNamed(atom.Img, h2)
+	if img == nil {
+		return
+	}
+	hasFluidClass := false
+	src := ""
+	for _, attr := range img.Attr {
+		switch attr.Key {
+		case "class":
+			hasFluidClass = attr.Val == "img-fluid"
+		case "src":
+			src = attr.Val
+		}
+	}
+	if hasFluidClass {
+		src, err := url.JoinPath(freeAnswerURL, src)
+		if err != nil {
+			log.Println("aotn: could not make sense of src:", src)
+		} else {
+			data.imageURL = src
+		}
+	}
+
+	return
 }
 
-// return true if done
-func extractDataRecursive(data *freeAnswerData, n *html.Node) bool {
-	if n.Type == html.ElementNode {
-		switch n.DataAtom {
-		case atom.H1:
-			data.title = formattedContent(n)
-			return !anyEmptyStrings(data.blurb, data.date, data.answer, data.imageURL)
-		case atom.H6:
-			data.blurb = formattedContent(n)
-			return !anyEmptyStrings(data.title, data.date, data.answer, data.imageURL)
-		case atom.H3:
-			data.date = formattedContent(n)
-			return !anyEmptyStrings(data.title, data.blurb, data.answer, data.imageURL)
-		case atom.H2:
-			data.answer = formattedContent(n)
-			return !anyEmptyStrings(data.title, data.blurb, data.date, data.imageURL)
-		case atom.Img:
-			hasFluidClass := false
-			src := ""
-			for _, attr := range n.Attr {
-				switch attr.Key {
-				case "class":
-					hasFluidClass = attr.Val == "img-fluid"
-				case "src":
-					src = attr.Val
-				}
-			}
-
-			if hasFluidClass {
-				src, err := url.JoinPath(freeAnswerURL, src)
-				if err != nil {
-					log.Println("free answer: could not make sense of src", src)
-				} else {
-					data.imageURL = src
-					return !anyEmptyStrings(data.title, data.blurb, data.date, data.answer)
-				}
-			}
+func findNextElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
+	for n := advanceElementSearch(n); n != nil; n = advanceElementSearch(n) {
+		if n.Type == html.ElementNode && n.DataAtom == tagName {
+			return n
 		}
 	}
 
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if extractDataRecursive(data, c) {
-			return true
-		}
-	}
+	return nil
+}
 
-	return false
+func advanceElementSearch(n *html.Node) *html.Node {
+	if n.FirstChild != nil {
+		return n.FirstChild
+	} else if n.NextSibling != nil {
+		return n.NextSibling
+	} else {
+		for n := n.Parent; n != nil; n = n.Parent {
+			if n.NextSibling != nil {
+				return n.NextSibling
+			}
+		}
+		return nil
+	}
 }
 
 var formatTokens = map[atom.Atom]string{
@@ -110,14 +130,4 @@ func formatContentRecursive(out *strings.Builder, currentFormats map[string]unit
 			}
 		}
 	}
-}
-
-func anyEmptyStrings(strings ...string) bool {
-	for _, s := range strings {
-		if s == "" {
-			return true
-		}
-	}
-
-	return false
 }
