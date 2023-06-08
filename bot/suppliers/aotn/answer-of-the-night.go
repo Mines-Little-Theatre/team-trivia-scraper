@@ -57,10 +57,10 @@ func fetchDocument(regionID string) (*html.Node, error) {
 
 func createEmbed(data freeAnswerData) *discordgo.MessageEmbed {
 	result := &discordgo.MessageEmbed{
-		Title:       data.title,
-		Description: data.blurb,
-		URL:         freeAnswerURL,
-		Color:       0x00cccc,
+		Title: data.title,
+		// Description: data.blurb,
+		URL:   freeAnswerURL,
+		Color: 0x00cccc,
 	}
 
 	if data.date != "" || data.answer != "" {
