@@ -11,7 +11,9 @@ import (
 type Config struct {
 	WebhookID    string
 	WebhookToken string
+	Suppliers    []string
 	Message      string
+	Embeds       []string
 	CryForHelp   string // optional
 }
 
@@ -23,17 +25,18 @@ func Run(config *Config) error {
 		return err
 	}
 
-	supplierResults := suppliers.RunSuppliers([]string{"aotn"})
+	supplierResults := suppliers.RunSuppliers(config.Suppliers)
 
 	data := new(discordgo.WebhookParams)
 	data.Content = config.Message
-
-	embed, ok := supplierResults.Embeds["aotn:answer"]
-	if ok {
-		data.Embeds = append(data.Embeds, embed)
+	for _, embedName := range config.Embeds {
+		embed, ok := supplierResults.Embeds[embedName]
+		if ok {
+			data.Embeds = append(data.Embeds, embed)
+		}
 	}
 
-	log.Println("finished collecting embeds, posting")
+	log.Println("finished collecting supplier results, posting")
 
 	_, err = session.WebhookExecute(config.WebhookID, config.WebhookToken, false, data)
 	if err != nil {
