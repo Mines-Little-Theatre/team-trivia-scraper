@@ -5,6 +5,7 @@ import (
 
 	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers"
 	_ "github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers/aotn"
+	_ "github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers/errsupply"
 	"github.com/bwmarrin/discordgo"
 )
 

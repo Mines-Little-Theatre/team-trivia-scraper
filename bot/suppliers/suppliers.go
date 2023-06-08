@@ -1,6 +1,7 @@
 package suppliers
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -79,10 +80,18 @@ func RunSuppliers(supplierNames []string) SupplierResults {
 		context, err := task.Join()
 		if err != nil {
 			log.Println("supplier", name, ":", err)
+			errorCount++
 		} else {
 			for embedName, embed := range context.embeds {
 				results.Embeds[name+":"+embedName] = embed
 			}
+		}
+	}
+
+	if errorCount > 0 {
+		results.Embeds["errors"] = &discordgo.MessageEmbed{
+			Description: fmt.Sprintf("%v supplier(s) returned errors. Check the logs for details.", errorCount),
+			Color:       0xffcc00,
 		}
 	}
 

@@ -21,7 +21,7 @@ func init() {
 	suppliers.RegisterSupplier("aotn", AnswerOfTheNight{})
 }
 
-func (a AnswerOfTheNight) SupplyData(context *suppliers.SupplierContext) error {
+func (AnswerOfTheNight) SupplyData(context *suppliers.SupplierContext) error {
 	doc, err := fetchDocument(context.Config("REGION_ID"))
 	if err != nil {
 		return err
@@ -56,13 +56,12 @@ func fetchDocument(regionID string) (*html.Node, error) {
 }
 
 func createEmbed(data freeAnswerData) *discordgo.MessageEmbed {
-	result := new(discordgo.MessageEmbed)
-	result.Type = discordgo.EmbedTypeRich
-
-	result.Title = data.title
-	// result.Description = data.blurb
-	result.URL = freeAnswerURL
-	result.Color = 0x00cccc
+	result := &discordgo.MessageEmbed{
+		Title:       data.title,
+		Description: data.blurb,
+		URL:         freeAnswerURL,
+		Color:       0x00cccc,
+	}
 
 	if data.date != "" || data.answer != "" {
 		result.Fields = []*discordgo.MessageEmbedField{{
