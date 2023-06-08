@@ -22,7 +22,7 @@ func init() {
 }
 
 func (a AnswerOfTheNight) SupplyData(context *suppliers.SupplierContext) error {
-	doc, err := fetchDocument()
+	doc, err := fetchDocument(context.Config("REGION_ID"))
 	if err != nil {
 		return err
 	}
@@ -32,8 +32,17 @@ func (a AnswerOfTheNight) SupplyData(context *suppliers.SupplierContext) error {
 	return nil
 }
 
-func fetchDocument() (*html.Node, error) {
-	resp, err := http.Get(freeAnswerURL)
+func fetchDocument(regionID string) (*html.Node, error) {
+	req, err := http.NewRequest("GET", freeAnswerURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if regionID != "" {
+		req.Header.Add("Cookie", "region_ID="+regionID)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode != 200 {

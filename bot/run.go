@@ -1,8 +1,6 @@
 package bot
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers"
@@ -32,8 +30,6 @@ func Run(config *Config) error {
 
 	embed, ok := supplierResults.Embeds["aotn:answer"]
 	if ok {
-		embedData, _ := json.Marshal(embed)
-		fmt.Println(string(embedData))
 		data.Embeds = append(data.Embeds, embed)
 	}
 
