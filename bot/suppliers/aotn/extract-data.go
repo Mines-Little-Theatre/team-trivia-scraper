@@ -1,8 +1,6 @@
 package aotn
 
 import (
-	"log"
-	"net/url"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -12,85 +10,68 @@ import (
 type unit struct{}
 
 func extractData(doc *html.Node) (data freeAnswerData) {
-	// title is the content of the first (and only) h1
-	h1 := findNextElementNamed(atom.H1, doc)
-	if h1 == nil {
-		return
-	}
-	data.title = formattedContent(h1)
+	main := findChildElementNamed(atom.Main, doc)
+	section := findChildElementNamed(atom.Section, main)
+	flexContainer := findChildElementNamed(atom.Div, section)
+	adSpaceDiv := findChildElementNamed(atom.Div, flexContainer)
 
-	// blurb is the content of the subsequent h6
-	h6 := findNextElementNamed(atom.H6, h1)
-	if h6 == nil {
-		return
-	}
-	data.blurb = formattedContent(h6)
+	titleDiv := findNextSiblingElementNamed(atom.Div, adSpaceDiv)
+	data.title = formattedContent(titleDiv)
 
-	// date is the content of the subsequent h3
-	h3 := findNextElementNamed(atom.H3, h6)
-	if h3 == nil {
-		return
-	}
-	data.date = formattedContent(h3)
+	blurbDiv := findNextSiblingElementNamed(atom.Div, titleDiv)
+	data.blurb = formattedContent(blurbDiv)
 
-	// answer is the content of the subsequent h2
-	h2 := findNextElementNamed(atom.H2, h3)
-	if h2 == nil {
-		return
-	}
-	data.answer = formattedContent(h2)
+	dateDiv := findNextSiblingElementNamed(atom.Div, blurbDiv)
+	data.date = formattedContent(dateDiv)
 
-	// (the terrible header structure is very convenient for this)
-	// and the image url is the src of the subsequent img if it (only) has the img-fluid class
-	img := findNextElementNamed(atom.Img, h2)
-	if img == nil {
-		return
-	}
-	hasFluidClass := false
-	src := ""
+	answerDiv := findNextSiblingElementNamed(atom.Div, dateDiv)
+	data.answer = formattedContent(answerDiv)
+
+	imageDiv := findNextSiblingElementNamed(atom.Div, answerDiv)
+	img := findChildElementNamed(atom.Img, imageDiv)
 	for _, attr := range img.Attr {
-		switch attr.Key {
-		case "class":
-			hasFluidClass = attr.Val == "img-fluid"
-		case "src":
-			src = attr.Val
-		}
-	}
-	if hasFluidClass {
-		src, err := url.JoinPath(freeAnswerURL, src)
-		if err != nil {
-			log.Println("aotn: could not make sense of src:", src)
-		} else {
-			data.imageURL = src
+		if attr.Key == "src" {
+			data.imageURL = attr.Val
+			break
 		}
 	}
 
 	return
 }
 
-func findNextElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
-	for n := advanceElementSearch(n); n != nil; n = advanceElementSearch(n) {
-		if n.Type == html.ElementNode && n.DataAtom == tagName {
-			return n
+func findChildElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
+	for at := advanceElementSearch(n, n); at != nil; at = advanceElementSearch(at, n) {
+		if at.Type == html.ElementNode && at.DataAtom == tagName {
+			return at
 		}
 	}
 
 	return nil
 }
 
-func advanceElementSearch(n *html.Node) *html.Node {
+func advanceElementSearch(n *html.Node, topmost *html.Node) *html.Node {
 	if n.FirstChild != nil {
 		return n.FirstChild
 	} else if n.NextSibling != nil {
 		return n.NextSibling
 	} else {
-		for n := n.Parent; n != nil; n = n.Parent {
+		for n := n.Parent; n != topmost && n != nil; n = n.Parent {
 			if n.NextSibling != nil {
 				return n.NextSibling
 			}
 		}
 		return nil
 	}
+}
+
+func findNextSiblingElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
+	for at := n.NextSibling; at != nil; at = at.NextSibling {
+		if at.Type == html.ElementNode && at.DataAtom == tagName {
+			return at
+		}
+	}
+
+	return nil
 }
 
 var formatTokens = map[atom.Atom]string{

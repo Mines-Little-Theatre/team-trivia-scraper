@@ -39,8 +39,9 @@ func fetchDocument(regionID string) (*html.Node, error) {
 	}
 
 	if regionID != "" {
-		req.Header.Add("Cookie", "region_ID="+regionID)
+		req.AddCookie(&http.Cookie{Name: "region_ID", Value: regionID})
 	}
+	req.AddCookie(&http.Cookie{Name: "new_site", Value: "Y"})
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -60,7 +61,7 @@ func createEmbed(data freeAnswerData) *discordgo.MessageEmbed {
 		Title: data.title,
 		// Description: data.blurb,
 		URL:   freeAnswerURL,
-		Color: 0x00cccc,
+		Color: 0x0069b5,
 	}
 
 	if data.date != "" || data.answer != "" {
