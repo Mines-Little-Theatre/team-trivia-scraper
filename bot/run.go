@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"log"
 
 	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers"
@@ -18,7 +19,7 @@ type Config struct {
 	CryForHelp   string // optional
 }
 
-func Run(config *Config) error {
+func Run(ctx context.Context, config *Config) error {
 	session, err := discordgo.New("")
 	if err != nil {
 		// reading the source code, it appears that this will never actually return an error
@@ -39,15 +40,15 @@ func Run(config *Config) error {
 
 	log.Println("finished collecting supplier results, posting")
 
-	_, err = session.WebhookExecute(config.WebhookID, config.WebhookToken, false, data)
+	_, err = session.WebhookExecute(config.WebhookID, config.WebhookToken, true, data, discordgo.WithContext(ctx))
 	if err != nil {
 		log.Println(err)
 		// attempt to cry for help
 		if config.CryForHelp != "" {
 			log.Println("crying for help")
-			_, err = session.WebhookExecute(config.WebhookID, config.WebhookToken, false, &discordgo.WebhookParams{
+			_, err = session.WebhookExecute(config.WebhookID, config.WebhookToken, true, &discordgo.WebhookParams{
 				Content: config.CryForHelp,
-			})
+			}, discordgo.WithContext(ctx))
 			if err != nil {
 				return err
 			}

@@ -14,7 +14,7 @@ func main() {
 
 	config := utils.ReadConfig()
 
-	lambda.Start(func(context.Context, any) ([]byte, error) {
-		return nil, bot.Run(config)
+	lambda.Start(func(ctx context.Context) error {
+		return bot.Run(ctx, config)
 	})
 }
