@@ -77,7 +77,7 @@ func RunSuppliers(supplierNames []string) SupplierResults {
 		Embeds: make(map[string]*discordgo.MessageEmbed),
 	}
 	for name, task := range tasks {
-		context, err := task.Join()
+		context, err := task.JoinWithoutPanicking()
 		if err != nil {
 			log.Println("supplier", name, ":", err)
 			errorCount++
