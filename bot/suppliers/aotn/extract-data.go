@@ -1,6 +1,8 @@
 package aotn
 
 import (
+	"log"
+	"net/url"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -29,10 +31,17 @@ func extractData(doc *html.Node) (data freeAnswerData) {
 
 	imageDiv := findNextSiblingElementNamed(atom.Div, answerDiv)
 	img := findChildElementNamed(atom.Img, imageDiv)
-	for _, attr := range img.Attr {
-		if attr.Key == "src" {
-			data.imageURL = attr.Val
-			break
+	if img != nil {
+		for _, attr := range img.Attr {
+			if attr.Key == "src" {
+				src, err := url.JoinPath(freeAnswerURL, attr.Val)
+				if err != nil {
+					log.Println("aotn: could not make sense of src:", src)
+				} else {
+					data.imageURL = src
+				}
+				break
+			}
 		}
 	}
 
@@ -52,16 +61,19 @@ func findChildElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
 func advanceElementSearch(n *html.Node, topmost *html.Node) *html.Node {
 	if n.FirstChild != nil {
 		return n.FirstChild
-	} else if n.NextSibling != nil {
-		return n.NextSibling
-	} else {
-		for n := n.Parent; n != topmost && n != nil; n = n.Parent {
-			if n.NextSibling != nil {
-				return n.NextSibling
+	} else if n != topmost {
+		if n.NextSibling != nil {
+			return n.NextSibling
+		} else if n != topmost {
+			for n := n.Parent; n != topmost && n != nil; n = n.Parent {
+				if n.NextSibling != nil {
+					return n.NextSibling
+				}
 			}
 		}
-		return nil
 	}
+
+	return nil
 }
 
 func findNextSiblingElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
