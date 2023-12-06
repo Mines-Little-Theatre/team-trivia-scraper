@@ -3,6 +3,7 @@ package aotn
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers"
 	"github.com/bwmarrin/discordgo"
@@ -28,6 +29,8 @@ func (AnswerOfTheNight) SupplyData(context *suppliers.SupplierContext) error {
 	}
 
 	data := extractData(doc)
+	today := time.Now()
+	data.imageURL = fmt.Sprintf("https://www.triviocity.com/game/inserts/%04[1]d/%02[2]d/%04[1]d-%02[2]d-%02[3]d/1/r4_1.jpg", today.Year(), today.Month(), today.Day())
 	context.AddEmbed("answer", createEmbed(data))
 	return nil
 }
