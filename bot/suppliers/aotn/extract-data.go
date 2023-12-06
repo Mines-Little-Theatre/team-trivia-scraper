@@ -124,7 +124,7 @@ func formattedContent(n *html.Node) string {
 	var out strings.Builder
 	currentFormats := make(map[string]unit, len(formatTokens))
 	formatContentRecursive(&out, currentFormats, n)
-	return out.String()
+	return strings.TrimSpace(out.String())
 }
 
 func formatContentRecursive(out *strings.Builder, currentFormats map[string]unit, n *html.Node) {
