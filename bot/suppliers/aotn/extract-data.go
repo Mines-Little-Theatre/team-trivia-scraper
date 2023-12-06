@@ -2,7 +2,6 @@ package aotn
 
 import (
 	"log"
-	"net/url"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -34,15 +33,35 @@ func extractData(doc *html.Node) (data freeAnswerData) {
 	if img != nil {
 		for _, attr := range img.Attr {
 			if attr.Key == "src" {
-				src, err := url.JoinPath(freeAnswerURL, attr.Val)
-				if err != nil {
-					log.Println("aotn: could not make sense of src:", src)
-				} else {
-					data.imageURL = src
-				}
+				// this is def going to break again eventually
+				data.imageURL = attr.Val
 				break
 			}
 		}
+	} else {
+		// maybe the image is commented out?? for some reason??
+		// I wish someone would explain why the people in charge of this website make the decisions they do
+		imageDivComment := findNextSiblingComment(answerDiv)
+		if imageDivComment != nil {
+			commentDoc, err := html.Parse(strings.NewReader(imageDivComment.Data))
+			if err != nil {
+				log.Println("aotn: found an image comment but could not parse it:", err)
+			} else {
+				img := findChildElementNamed(atom.Img, commentDoc)
+				if img != nil {
+					for _, attr := range img.Attr {
+						if attr.Key == "src" {
+							// this is def going to break again eventually
+							data.imageURL = attr.Val
+							break
+						}
+					}
+				}
+			}
+		}
+		// could also try constructing the URL manually
+		// sample: https://www.triviocity.com/game/inserts/2023/12/2023-12-05/1/r4_1.jpg
+		// let's just not think super hard about what the structure of that URL implies
 	}
 
 	return
@@ -79,6 +98,16 @@ func advanceElementSearch(n *html.Node, topmost *html.Node) *html.Node {
 func findNextSiblingElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
 	for at := n.NextSibling; at != nil; at = at.NextSibling {
 		if at.Type == html.ElementNode && at.DataAtom == tagName {
+			return at
+		}
+	}
+
+	return nil
+}
+
+func findNextSiblingComment(n *html.Node) *html.Node {
+	for at := n.NextSibling; at != nil; at = at.NextSibling {
+		if at.Type == html.CommentNode {
 			return at
 		}
 	}
