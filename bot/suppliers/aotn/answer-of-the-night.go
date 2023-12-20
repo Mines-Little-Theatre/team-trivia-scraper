@@ -3,7 +3,6 @@ package aotn
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers"
 	"github.com/bwmarrin/discordgo"
@@ -13,7 +12,7 @@ import (
 const freeAnswerURL = "https://teamtrivia.com/free/"
 
 type freeAnswerData struct {
-	title, blurb, date, answer, imageURL string
+	title, blurb, date, answer string
 }
 
 type AnswerOfTheNight struct{}
@@ -29,8 +28,6 @@ func (AnswerOfTheNight) SupplyData(context *suppliers.SupplierContext) error {
 	}
 
 	data := extractData(doc)
-	today := time.Now()
-	data.imageURL = fmt.Sprintf("https://www.triviocity.com/game/inserts/%04[1]d/%02[2]d/%04[1]d-%02[2]d-%02[3]d/1/r4_1.jpg", today.Year(), today.Month(), today.Day())
 	context.AddEmbed("answer", createEmbed(data))
 	return nil
 }
@@ -72,12 +69,6 @@ func createEmbed(data freeAnswerData) *discordgo.MessageEmbed {
 			Name:  data.date,
 			Value: data.answer,
 		}}
-	}
-
-	if data.imageURL != "" {
-		result.Image = &discordgo.MessageEmbedImage{
-			URL: data.imageURL,
-		}
 	}
 
 	return result
