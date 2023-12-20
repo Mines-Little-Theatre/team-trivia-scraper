@@ -10,29 +10,30 @@ import (
 type unit struct{}
 
 func extractData(doc *html.Node) (data freeAnswerData) {
-	main := findChildElementNamed(atom.Main, doc)
-	section := findChildElementNamed(atom.Section, main)
-	flexContainer := findChildElementNamed(atom.Div, section)
-	adSpaceDiv := findChildElementNamed(atom.Div, flexContainer)
+	main := findChildElementNamed(doc, atom.Main)
 
-	titleDiv := findNextSiblingElementNamed(atom.Div, adSpaceDiv)
+	titleDiv := findChildNodeWhere(main, func(n *html.Node) bool {
+		return n.Type == html.ElementNode && n.DataAtom == atom.Div && findChildNodeWhere(n, func(n *html.Node) bool {
+			return n.Type == html.TextNode && strings.ToLower(n.Data) == "answer of the night"
+		}) != nil
+	})
 	data.title = formattedContent(titleDiv)
 
-	blurbDiv := findNextSiblingElementNamed(atom.Div, titleDiv)
+	blurbDiv := findNextSiblingElementNamed(titleDiv, atom.Div)
 	data.blurb = formattedContent(blurbDiv)
 
-	dateDiv := findNextSiblingElementNamed(atom.Div, blurbDiv)
+	dateDiv := findNextSiblingElementNamed(blurbDiv, atom.Div)
 	data.date = formattedContent(dateDiv)
 
-	answerDiv := findNextSiblingElementNamed(atom.Div, dateDiv)
+	answerDiv := findNextSiblingElementNamed(dateDiv, atom.Div)
 	data.answer = formattedContent(answerDiv)
 
 	return
 }
 
-func findChildElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
-	for at := advanceElementSearch(n, n); at != nil; at = advanceElementSearch(at, n) {
-		if at.Type == html.ElementNode && at.DataAtom == tagName {
+func findChildNodeWhere(n *html.Node, predicate func(*html.Node) bool) *html.Node {
+	for at := advanceNodeSearch(n, n); at != nil; at = advanceNodeSearch(at, n) {
+		if predicate(at) {
 			return at
 		}
 	}
@@ -40,7 +41,7 @@ func findChildElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
 	return nil
 }
 
-func advanceElementSearch(n *html.Node, topmost *html.Node) *html.Node {
+func advanceNodeSearch(n *html.Node, topmost *html.Node) *html.Node {
 	if n.FirstChild != nil {
 		return n.FirstChild
 	} else if n != topmost {
@@ -58,7 +59,11 @@ func advanceElementSearch(n *html.Node, topmost *html.Node) *html.Node {
 	return nil
 }
 
-func findNextSiblingElementNamed(tagName atom.Atom, n *html.Node) *html.Node {
+func findChildElementNamed(n *html.Node, tagName atom.Atom) *html.Node {
+	return findChildNodeWhere(n, func(n *html.Node) bool { return n.Type == html.ElementNode && n.DataAtom == tagName })
+}
+
+func findNextSiblingElementNamed(n *html.Node, tagName atom.Atom) *html.Node {
 	for at := n.NextSibling; at != nil; at = at.NextSibling {
 		if at.Type == html.ElementNode && at.DataAtom == tagName {
 			return at
