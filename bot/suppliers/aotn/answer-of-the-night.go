@@ -2,6 +2,7 @@ package aotn
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/suppliers"
@@ -28,7 +29,31 @@ func (AnswerOfTheNight) SupplyData(context *suppliers.SupplierContext) error {
 	}
 
 	data := extractData(doc)
-	context.AddEmbed("answer", createEmbed(data))
+	embed := createEmbed(data)
+
+	if data.answer != "" {
+		openaiToken := context.Config("OPENAI_TOKEN")
+		if openaiToken != "" {
+			imageUrl, err := generateImage(data.answer, openaiToken)
+			if err != nil {
+				log.Println("aotn generate image:", err)
+				embed.Footer = &discordgo.MessageEmbedFooter{
+					Text: "Image generation failed: " + err.Error(),
+				}
+			} else {
+				embed.Image = &discordgo.MessageEmbedImage{
+					URL:    imageUrl,
+					Width:  256,
+					Height: 256,
+				}
+				embed.Footer = &discordgo.MessageEmbedFooter{
+					Text: "Image is AI-generated",
+				}
+			}
+		}
+	}
+
+	context.AddEmbed("answer", embed)
 	return nil
 }
 
