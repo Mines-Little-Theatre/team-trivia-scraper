@@ -1,12 +1,11 @@
 module github.com/Mines-Little-Theatre/team-trivia-scraper
 
-go 1.18
+go 1.21
 
 require (
-	github.com/Quantaly/shunt v1.1.1
 	github.com/aws/aws-lambda-go v1.32.0
 	github.com/bwmarrin/discordgo v0.27.1
-	github.com/sashabaranov/go-openai v1.17.11
+	github.com/sashabaranov/go-openai v1.18.3
 	golang.org/x/net v0.20.0
 )
 

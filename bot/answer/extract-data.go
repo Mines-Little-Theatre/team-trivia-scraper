@@ -1,4 +1,4 @@
-package aotn
+package answer
 
 import (
 	"strings"
@@ -9,7 +9,9 @@ import (
 
 type unit struct{}
 
-func extractData(doc *html.Node) (data freeAnswerData) {
+func extractData(doc *html.Node) (*AnswerData, error) {
+	data := new(AnswerData)
+
 	main := findChildElementNamed(doc, atom.Main)
 
 	titleDiv := findChildNodeWhere(main, func(n *html.Node) bool {
@@ -17,18 +19,18 @@ func extractData(doc *html.Node) (data freeAnswerData) {
 			return n.Type == html.TextNode && strings.ToLower(n.Data) == "answer of the night"
 		}) != nil
 	})
-	data.title = formattedContent(titleDiv)
+	data.Title = formattedContent(titleDiv)
 
 	blurbDiv := findNextSiblingElementNamed(titleDiv, atom.Div)
-	data.blurb = formattedContent(blurbDiv)
+	data.Blurb = formattedContent(blurbDiv)
 
 	dateDiv := findNextSiblingElementNamed(blurbDiv, atom.Div)
-	data.date = formattedContent(dateDiv)
+	data.Date = formattedContent(dateDiv)
 
 	answerDiv := findNextSiblingElementNamed(dateDiv, atom.Div)
-	data.answer = formattedContent(answerDiv)
+	data.Answer = formattedContent(answerDiv)
 
-	return
+	return data, nil
 }
 
 func findChildNodeWhere(n *html.Node, predicate func(*html.Node) bool) *html.Node {

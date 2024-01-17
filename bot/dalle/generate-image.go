@@ -1,13 +1,22 @@
-package aotn
+package dalle
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/sashabaranov/go-openai"
 )
 
-func generateImage(answer, authToken string) (string, error) {
+var ErrNoToken error = errors.New("TRIVIA_BOT_OPENAI_TOKEN not set")
+
+func GenerateImage(ctx context.Context, answer string) (string, error) {
+	authToken, ok := os.LookupEnv("TRIVIA_BOT_OPENAI_TOKEN")
+	if !ok {
+		return "", ErrNoToken
+	}
+
 	client := openai.NewClient(authToken)
 	resp, err := client.CreateImage(context.Background(), openai.ImageRequest{
 		Prompt:         answer,
