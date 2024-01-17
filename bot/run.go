@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -74,15 +75,20 @@ func Run(ctx context.Context) (err error) {
 		}
 
 		if answerData.Answer != "" {
-			imageURL, err := dalle.GenerateImage(ctx, answerData.Answer)
+			imageData, err := dalle.GenerateImage(ctx, answerData.Answer)
 			if err != nil && !errors.Is(err, dalle.ErrNoToken) {
 				log.Println("generate image:", err)
 				embed.Footer = &discordgo.MessageEmbedFooter{
 					Text: "Image generation failed: " + err.Error(),
 				}
 			} else if err == nil {
+				webhookMessage.Files = []*discordgo.File{{
+					Name:        "image.png",
+					ContentType: "image/png",
+					Reader:      bytes.NewReader(imageData),
+				}}
 				embed.Image = &discordgo.MessageEmbedImage{
-					URL:    imageURL,
+					URL:    "attachment://image.png",
 					Width:  256,
 					Height: 256,
 				}

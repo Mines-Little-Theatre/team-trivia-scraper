@@ -2,8 +2,8 @@ package dalle
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/sashabaranov/go-openai"
@@ -11,24 +11,24 @@ import (
 
 var ErrNoToken error = errors.New("TRIVIA_BOT_OPENAI_TOKEN not set")
 
-func GenerateImage(ctx context.Context, answer string) (string, error) {
+func GenerateImage(ctx context.Context, answer string) ([]byte, error) {
 	authToken, ok := os.LookupEnv("TRIVIA_BOT_OPENAI_TOKEN")
 	if !ok {
-		return "", ErrNoToken
+		return nil, ErrNoToken
 	}
 
 	client := openai.NewClient(authToken)
 	resp, err := client.CreateImage(context.Background(), openai.ImageRequest{
 		Prompt:         answer,
 		Model:          openai.CreateImageModelDallE2,
-		ResponseFormat: openai.CreateImageResponseFormatURL,
+		ResponseFormat: openai.CreateImageResponseFormatB64JSON,
 		Size:           openai.CreateImageSize256x256,
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if len(resp.Data) != 1 {
-		return "", fmt.Errorf("got %d images for some reason", len(resp.Data))
+	if len(resp.Data) < 1 {
+		return nil, errors.New("got no images for some reason")
 	}
-	return resp.Data[0].URL, nil
+	return base64.StdEncoding.DecodeString(resp.Data[0].B64JSON)
 }
