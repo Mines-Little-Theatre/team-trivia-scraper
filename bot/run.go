@@ -42,13 +42,7 @@ func Run(ctx context.Context) (err error) {
 	defer func() {
 		if panicValue := recover(); panicValue != nil {
 			log.Println("panicked:", panicValue)
-			distressMessage, ok := os.LookupEnv("TRIVIA_BOT_CRY_FOR_HELP")
-			if ok {
-				log.Println("crying for help")
-			}
-			_, err = session.WebhookExecute(webhookID, webhookToken, true, &discordgo.WebhookParams{
-				Content: distressMessage,
-			}, discordgo.WithContext(ctx))
+			err = cryForHelp(ctx, session, webhookID, webhookToken)
 		}
 	}()
 
@@ -120,9 +114,21 @@ func Run(ctx context.Context) (err error) {
 
 	_, err = session.WebhookExecute(webhookID, webhookToken, true, webhookMessage, discordgo.WithContext(ctx))
 	if err != nil {
-		panic(err)
+		log.Println("execute webhook:", err)
+		return cryForHelp(ctx, session, webhookID, webhookToken)
 	}
 
 	log.Println("finished posting")
 	return nil
+}
+
+func cryForHelp(ctx context.Context, session *discordgo.Session, webhookID, webhookToken string) error {
+	distressMessage, err := readEnv("TRIVIA_BOT_CRY_FOR_HELP")
+	if err != nil {
+		return err
+	}
+	_, err = session.WebhookExecute(webhookID, webhookToken, true, &discordgo.WebhookParams{
+		Content: distressMessage,
+	}, discordgo.WithContext(ctx))
+	return err
 }
