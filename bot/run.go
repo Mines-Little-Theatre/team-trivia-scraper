@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"image/jpeg"
+	"image/png"
 	"log"
 	"os"
 
@@ -75,25 +77,42 @@ func Run(ctx context.Context) (err error) {
 		}
 
 		if answerData.Answer != "" {
-			imageData, err := dalle.GenerateImage(ctx, answerData.Answer)
+			pngData, err := dalle.GenerateImage(ctx, answerData.Answer)
 			if err != nil && !errors.Is(err, dalle.ErrNoToken) {
 				log.Println("generate image:", err)
 				embed.Footer = &discordgo.MessageEmbedFooter{
 					Text: "Image generation failed: " + err.Error(),
 				}
 			} else if err == nil {
-				webhookMessage.Files = []*discordgo.File{{
-					Name:        "image.png",
-					ContentType: "image/png",
-					Reader:      bytes.NewReader(imageData),
-				}}
-				embed.Image = &discordgo.MessageEmbedImage{
-					URL:    "attachment://image.png",
-					Width:  256,
-					Height: 256,
-				}
-				embed.Footer = &discordgo.MessageEmbedFooter{
-					Text: "Image is AI-generated",
+				image, err := png.Decode(bytes.NewReader(pngData))
+				if err != nil {
+					log.Println("decode image:", err)
+					embed.Footer = &discordgo.MessageEmbedFooter{
+						Text: "Image generation failed (decoding): " + err.Error(),
+					}
+				} else {
+					jpegBuf := new(bytes.Buffer)
+					err := jpeg.Encode(jpegBuf, image, nil)
+					if err != nil {
+						log.Println("encode image:", err)
+						embed.Footer = &discordgo.MessageEmbedFooter{
+							Text: "Image generation failed (encoding): " + err.Error(),
+						}
+					} else {
+						webhookMessage.Files = []*discordgo.File{{
+							Name:        "image.jpg",
+							ContentType: "image/jpeg",
+							Reader:      jpegBuf,
+						}}
+						embed.Image = &discordgo.MessageEmbedImage{
+							URL:    "attachment://image.jpg",
+							Width:  image.Bounds().Dx(),
+							Height: image.Bounds().Dy(),
+						}
+						embed.Footer = &discordgo.MessageEmbedFooter{
+							Text: "Image is AI-generated",
+						}
+					}
 				}
 			}
 		}
