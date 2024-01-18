@@ -99,9 +99,7 @@ func Run(ctx context.Context) (err error) {
 							Reader:      jpegBuf,
 						}}
 						embed.Image = &discordgo.MessageEmbedImage{
-							URL:    "attachment://image.jpg",
-							Width:  image.Bounds().Dx(),
-							Height: image.Bounds().Dy(),
+							URL: "attachment://image.jpg",
 						}
 						embed.Footer = &discordgo.MessageEmbedFooter{
 							Text: "Image is AI-generated",
