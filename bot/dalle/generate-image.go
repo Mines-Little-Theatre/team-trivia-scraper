@@ -20,7 +20,7 @@ func GenerateImage(ctx context.Context, answer string) ([]byte, error) {
 	}
 
 	client := openai.NewClient(authToken)
-	apiResp, err := client.CreateImage(context.Background(), openai.ImageRequest{
+	apiResp, err := client.CreateImage(ctx, openai.ImageRequest{
 		Prompt:         answer,
 		Model:          openai.CreateImageModelDallE2,
 		ResponseFormat: openai.CreateImageResponseFormatURL,
@@ -43,7 +43,7 @@ func GenerateImage(ctx context.Context, answer string) ([]byte, error) {
 	}
 	defer imageResp.Body.Close()
 	if imageResp.StatusCode != 200 {
-		return nil, fmt.Errorf("got status %d %s while retrieving image", imageResp.StatusCode, imageResp.Status)
+		return nil, fmt.Errorf("got status %s while retrieving image", imageResp.Status)
 	}
 	return io.ReadAll(imageResp.Body)
 }
