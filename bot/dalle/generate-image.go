@@ -24,7 +24,7 @@ func GenerateImage(ctx context.Context, answer string) ([]byte, error) {
 		Prompt:         answer,
 		Model:          openai.CreateImageModelDallE2,
 		ResponseFormat: openai.CreateImageResponseFormatURL,
-		Size:           openai.CreateImageSize256x256,
+		Size:           openai.CreateImageSize512x512,
 	})
 	if err != nil {
 		return nil, err
