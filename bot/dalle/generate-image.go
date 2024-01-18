@@ -2,8 +2,10 @@ package dalle
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 
 	"github.com/sashabaranov/go-openai"
@@ -18,17 +20,30 @@ func GenerateImage(ctx context.Context, answer string) ([]byte, error) {
 	}
 
 	client := openai.NewClient(authToken)
-	resp, err := client.CreateImage(context.Background(), openai.ImageRequest{
+	apiResp, err := client.CreateImage(context.Background(), openai.ImageRequest{
 		Prompt:         answer,
 		Model:          openai.CreateImageModelDallE2,
-		ResponseFormat: openai.CreateImageResponseFormatB64JSON,
+		ResponseFormat: openai.CreateImageResponseFormatURL,
 		Size:           openai.CreateImageSize256x256,
 	})
 	if err != nil {
 		return nil, err
 	}
-	if len(resp.Data) < 1 {
+	if len(apiResp.Data) < 1 {
 		return nil, errors.New("got no images for some reason")
 	}
-	return base64.StdEncoding.DecodeString(resp.Data[0].B64JSON)
+
+	imageReq, err := http.NewRequestWithContext(ctx, "GET", apiResp.Data[0].URL, nil)
+	if err != nil {
+		return nil, err
+	}
+	imageResp, err := http.DefaultClient.Do(imageReq)
+	if err != nil {
+		return nil, err
+	}
+	defer imageResp.Body.Close()
+	if imageResp.StatusCode != 200 {
+		return nil, fmt.Errorf("got status %d %s while retrieving image", imageResp.StatusCode, imageResp.Status)
+	}
+	return io.ReadAll(imageResp.Body)
 }
