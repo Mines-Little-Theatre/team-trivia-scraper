@@ -102,7 +102,7 @@ func Run(ctx context.Context) (err error) {
 							URL: "attachment://image.jpg",
 						}
 						embed.Footer = &discordgo.MessageEmbedFooter{
-							Text: "Image is AI-generated",
+							Text: "Image is AI-generated (DALL·E 2)",
 						}
 					}
 				}
