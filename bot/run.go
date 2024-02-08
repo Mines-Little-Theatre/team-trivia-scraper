@@ -93,6 +93,7 @@ func Run(ctx context.Context) (err error) {
 							Text: "Image generation failed (encoding): " + err.Error(),
 						}
 					} else {
+						log.Printf("JPEG encoding reduced image size from %d to %d (%+.1f%%)", len(pngData), jpegBuf.Len(), 100.0*float64(jpegBuf.Len()-len(pngData))/float64(len(pngData)))
 						webhookMessage.Files = []*discordgo.File{{
 							Name:        "image.jpg",
 							ContentType: "image/jpeg",
@@ -102,7 +103,7 @@ func Run(ctx context.Context) (err error) {
 							URL: "attachment://image.jpg",
 						}
 						embed.Footer = &discordgo.MessageEmbedFooter{
-							Text: "Image is AI-generated (DALL·E 2)",
+							Text: "Image is AI-generated (DALL·E 3)",
 						}
 					}
 				}

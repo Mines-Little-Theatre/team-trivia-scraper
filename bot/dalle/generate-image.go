@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 
@@ -22,7 +23,7 @@ func GenerateImage(ctx context.Context, answer string) ([]byte, error) {
 	client := openai.NewClient(authToken)
 	apiResp, err := client.CreateImage(ctx, openai.ImageRequest{
 		Prompt:         answer,
-		Model:          openai.CreateImageModelDallE2,
+		Model:          openai.CreateImageModelDallE3,
 		ResponseFormat: openai.CreateImageResponseFormatURL,
 		Size:           openai.CreateImageSize1024x1024,
 	})
@@ -33,6 +34,7 @@ func GenerateImage(ctx context.Context, answer string) ([]byte, error) {
 		return nil, errors.New("got no images for some reason")
 	}
 
+	log.Println("image url is", apiResp.Data[0].URL)
 	imageReq, err := http.NewRequestWithContext(ctx, "GET", apiResp.Data[0].URL, nil)
 	if err != nil {
 		return nil, err
