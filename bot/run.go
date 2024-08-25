@@ -3,7 +3,6 @@ package bot
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"image/jpeg"
 	"image/png"
@@ -11,7 +10,7 @@ import (
 	"os"
 
 	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/answer"
-	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/dalle"
+	"github.com/Mines-Little-Theatre/team-trivia-scraper/bot/imagegen"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -71,14 +70,14 @@ func Run(ctx context.Context) (err error) {
 		}
 
 		if answerData.Answer != "" {
-			pngData, err := dalle.GenerateImage(ctx, answerData.Answer)
-			if err != nil && !errors.Is(err, dalle.ErrNoToken) {
+			generatedImage, err := imagegen.GenerateImage(ctx, answerData.Answer)
+			if err != nil {
 				log.Println("generate image:", err)
 				embed.Footer = &discordgo.MessageEmbedFooter{
 					Text: "Image generation failed: " + err.Error(),
 				}
-			} else if err == nil {
-				image, err := png.Decode(bytes.NewReader(pngData))
+			} else if generatedImage != nil {
+				image, err := png.Decode(bytes.NewReader(generatedImage.PNGData))
 				if err != nil {
 					log.Println("decode image:", err)
 					embed.Footer = &discordgo.MessageEmbedFooter{
@@ -93,7 +92,7 @@ func Run(ctx context.Context) (err error) {
 							Text: "Image generation failed (encoding): " + err.Error(),
 						}
 					} else {
-						log.Printf("JPEG encoding reduced image size from %d to %d (%+.1f%%)", len(pngData), jpegBuf.Len(), 100.0*float64(jpegBuf.Len()-len(pngData))/float64(len(pngData)))
+						log.Printf("JPEG encoding reduced image size from %d to %d (%+.1f%%)", len(generatedImage.PNGData), jpegBuf.Len(), 100.0*float64(jpegBuf.Len()-len(generatedImage.PNGData))/float64(len(generatedImage.PNGData)))
 						webhookMessage.Files = []*discordgo.File{{
 							Name:        "image.jpg",
 							ContentType: "image/jpeg",
@@ -103,7 +102,7 @@ func Run(ctx context.Context) (err error) {
 							URL: "attachment://image.jpg",
 						}
 						embed.Footer = &discordgo.MessageEmbedFooter{
-							Text: "Image is AI-generated (DALL·E 3)",
+							Text: fmt.Sprintf("Image is AI-generated (%s)", generatedImage.ModelName),
 						}
 					}
 				}

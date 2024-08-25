@@ -1,4 +1,4 @@
-package dalle
+package imagegen
 
 import (
 	"context"
@@ -12,12 +12,10 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-var ErrNoToken error = errors.New("TRIVIA_BOT_OPENAI_TOKEN not set")
-
-func GenerateImage(ctx context.Context, answer string) ([]byte, error) {
+func generateImageWithOpenAI(ctx context.Context, answer string) (*GeneratedImage, error) {
 	authToken, ok := os.LookupEnv("TRIVIA_BOT_OPENAI_TOKEN")
 	if !ok {
-		return nil, ErrNoToken
+		return nil, errNotConfigured
 	}
 
 	client := openai.NewClient(authToken)
@@ -28,24 +26,32 @@ func GenerateImage(ctx context.Context, answer string) ([]byte, error) {
 		Size:           openai.CreateImageSize1024x1024,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("openai: %w", err)
 	}
 	if len(apiResp.Data) < 1 {
 		return nil, errors.New("got no images for some reason")
 	}
 
-	log.Println("image url is", apiResp.Data[0].URL)
+	log.Println("openai: image url is", apiResp.Data[0].URL)
 	imageReq, err := http.NewRequestWithContext(ctx, "GET", apiResp.Data[0].URL, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("openai: %w", err)
 	}
+
 	imageResp, err := http.DefaultClient.Do(imageReq)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("openai: %w", err)
 	}
 	defer imageResp.Body.Close()
+
 	if imageResp.StatusCode != 200 {
-		return nil, fmt.Errorf("got status %s while retrieving image", imageResp.Status)
+		return nil, fmt.Errorf("openai: got status %s while retrieving image", imageResp.Status)
 	}
-	return io.ReadAll(imageResp.Body)
+
+	pngData, err := io.ReadAll(imageResp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("openai: %w", err)
+	}
+
+	return &GeneratedImage{PNGData: pngData, ModelName: "DALL·E 3"}, nil
 }
