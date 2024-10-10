@@ -1,0 +1,12 @@
+{
+  "extends": "@tsconfig/strictest",
+  "compilerOptions": {
+    "target": "es2021",
+    "lib": ["es2021"],
+    "module": "preserve",
+    "types": ["@cloudflare/workers-types/2023-07-01"],
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": ["worker-configuration.d.ts", "src/**/*.ts"]
+}
