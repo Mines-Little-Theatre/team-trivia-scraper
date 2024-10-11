@@ -20,7 +20,6 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
-          cache-dependency-path: package-lock.json
       - run: npm ci --prefer-offline
       - run: npm run check-format
 
@@ -33,7 +32,6 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
-          cache-dependency-path: package-lock.json
       - run: npm ci --prefer-offline
       - run: npm run lint
 
@@ -46,6 +44,5 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
-          cache-dependency-path: package-lock.json
       - run: npm ci --prefer-offline
       - run: npm run check-types
