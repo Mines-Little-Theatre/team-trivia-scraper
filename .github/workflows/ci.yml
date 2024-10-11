@@ -51,14 +51,3 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci --prefer-offline
       - run: npm run check-types
-
-  list-config:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - run: npm config ls
