@@ -4,5 +4,5 @@ declare module "*.wasm" {
   export default self;
 }
 
-// ImageData isn't included in ECMAScript, but workerd has it
+// We need an ImageData definition to satisfy jSquash
 type ImageData = unknown;
