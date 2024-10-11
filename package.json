@@ -11,7 +11,8 @@
     "cf-typegen": "wrangler types",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check-types": "tsc -b"
   },
   "dependencies": {
     "@jsquash/jpeg": "^1.4.0",
