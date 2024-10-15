@@ -8,6 +8,7 @@ crons = ["0 20 * * SUN,WED"] # 1pm MST, 2pm MDT
 
 [vars]
 IMAGE_GENERATION_MODEL = "@cf/stabilityai/stable-diffusion-xl-base-1.0"
+TEAM_TRIVIA_REGION_ID = "19"
 
 [ai]
 binding = "AI"

@@ -2,6 +2,7 @@
 
 interface Env {
   IMAGE_GENERATION_MODEL: "@cf/stabilityai/stable-diffusion-xl-base-1.0";
+  TEAM_TRIVIA_REGION_ID: "19";
   DISCORD_WEBHOOK_ID: string;
   DISCORD_WEBHOOK_TOKEN: string;
   AI: Ai;
