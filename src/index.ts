@@ -1,30 +1,37 @@
-import { fetcher } from "itty-fetcher";
-import { fetchFreeAnswer } from "./trivia";
-
-const discord = fetcher({
-  base: "https://discord.com/api/v10",
-});
+import { AnswerData, fetchFreeAnswer } from "./trivia";
+import { webhook } from "./webhook";
 
 export default {
   async scheduled(_, env) {
-    // const imageStream = await env.AI.run(env.IMAGE_GENERATION_MODEL, {
-    //   prompt: "cyberpunk cat",
-    // });
-    // const imageBlob = await new Response(imageStream).blob();
-    // const formData = new FormData();
-    // formData.append("files[0]", imageBlob, "cybercat.png");
-    // await discord.post(
-    //   `/webhooks/${env.DISCORD_WEBHOOK_ID}/${env.DISCORD_WEBHOOK_TOKEN}`,
-    //   formData,
-    // );
-    console.log("yeet");
-    await discord.post(
-      `/webhooks/${env.DISCORD_WEBHOOK_ID}/${env.DISCORD_WEBHOOK_TOKEN}`,
-      {
-        content: `\`\`\`json
-${JSON.stringify(await fetchFreeAnswer(env.TEAM_TRIVIA_REGION_ID), undefined, 2)}
+    const post = webhook(env.DISCORD_WEBHOOK_ID, env.DISCORD_WEBHOOK_TOKEN);
+
+    let answer: AnswerData;
+    try {
+      answer = await fetchFreeAnswer(env.TEAM_TRIVIA_REGION_ID);
+    } catch (e) {
+      await post({
+        content: env.BOT_MESSAGE,
+        embeds: [
+          {
+            description: `Failed to retrieve the free answer: ${String(e)}`,
+            color: 0xffcc00,
+          },
+        ],
+      });
+      return;
+    }
+
+    await post({
+      content: env.BOT_MESSAGE,
+
+      embeds: [
+        {
+          description: `\`\`\`json
+${JSON.stringify(answer, undefined, 2)}
 \`\`\``,
-      },
-    );
+          color: 0x0069b5,
+        },
+      ],
+    });
   },
 } satisfies ExportedHandler<Env>;

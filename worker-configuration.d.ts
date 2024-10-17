@@ -3,6 +3,7 @@
 interface Env {
   IMAGE_GENERATION_MODEL: "@cf/stabilityai/stable-diffusion-xl-base-1.0";
   TEAM_TRIVIA_REGION_ID: "19";
+  BOT_MESSAGE: "<@&750053568744259664> Trivia tonight! Woody’s Pizza at 9PM; react with <:friedrobert:1013539084792238081> if you’re coming!";
   DISCORD_WEBHOOK_ID: string;
   DISCORD_WEBHOOK_TOKEN: string;
   AI: Ai;
