@@ -10,9 +10,9 @@
     "start": "wrangler dev --test-scheduled",
     "cf-typegen": "wrangler types",
     "format": "prettier --write .",
-    "check-format": "prettier --check .",
     "lint": "eslint",
-    "check-types": "tsc -b"
+    "ci:format": "prettier --check .",
+    "ci:types": "tsc -b"
   },
   "dependencies": {
     "@jsquash/jpeg": "^1.4.0",
