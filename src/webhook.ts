@@ -7,5 +7,5 @@ const discord = fetcher({
 
 export function webhook(id: string, token: string) {
   return (message: RESTPostAPIChannelMessageJSONBody) =>
-    discord.post(`/webhooks/${id}/${token}`, message);
+    discord.post(`/webhooks/${id}/${token}?wait=true`, message);
 }

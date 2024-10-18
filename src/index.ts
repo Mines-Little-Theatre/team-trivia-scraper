@@ -1,4 +1,4 @@
-import { AnswerData, fetchFreeAnswer } from "./trivia";
+import { AnswerData, fetchFreeAnswer, freeAnswerURL } from "./trivia";
 import { webhook } from "./webhook";
 
 export default {
@@ -23,12 +23,16 @@ export default {
 
     await post({
       content: env.BOT_MESSAGE,
-
       embeds: [
         {
-          description: `\`\`\`json
-${JSON.stringify(answer, undefined, 2)}
-\`\`\``,
+          title: answer.title,
+          url: freeAnswerURL,
+          fields: [
+            {
+              name: answer.date,
+              value: answer.answer,
+            },
+          ],
           color: 0x0069b5,
         },
       ],

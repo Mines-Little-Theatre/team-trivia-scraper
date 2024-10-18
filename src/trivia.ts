@@ -8,7 +8,7 @@ export interface AnswerData {
   answer: string;
 }
 
-const freeAnswerURL = "https://teamtrivia.com/free/";
+export const freeAnswerURL = "https://teamtrivia.com/free/";
 
 export async function fetchFreeAnswer(regionId: string): Promise<AnswerData> {
   const document = parseDocument(
