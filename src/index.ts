@@ -1,5 +1,9 @@
+import { generateImage } from "./image-generation";
 import { AnswerData, fetchFreeAnswer, freeAnswerURL } from "./trivia";
 import { webhook } from "./webhook";
+
+const embedColor = 0x0069b5;
+const errorColor = 0xffcc00;
 
 export default {
   async scheduled(_, env) {
@@ -14,28 +18,63 @@ export default {
         embeds: [
           {
             description: `Failed to retrieve the free answer: ${String(e)}`,
-            color: 0xffcc00,
+            color: errorColor,
           },
         ],
       });
       return;
     }
 
-    await post({
-      content: env.BOT_MESSAGE,
-      embeds: [
-        {
-          title: answer.title,
-          url: freeAnswerURL,
-          fields: [
-            {
-              name: answer.date,
-              value: answer.answer,
+    let image: File;
+    try {
+      image = await generateImage(env, answer.answer);
+    } catch (e) {
+      await post({
+        content: env.BOT_MESSAGE,
+        embeds: [
+          {
+            title: answer.title,
+            url: freeAnswerURL,
+            fields: [
+              {
+                name: answer.date,
+                value: answer.answer,
+              },
+            ],
+            footer: { text: `Failed to generate image: ${String(e)}` },
+            color: embedColor,
+          },
+        ],
+      });
+      return;
+    }
+
+    await post(
+      {
+        content: env.BOT_MESSAGE,
+        embeds: [
+          {
+            title: answer.title,
+            url: freeAnswerURL,
+            fields: [
+              {
+                name: answer.date,
+                value: answer.answer,
+              },
+            ],
+            image: {
+              url: `attachment://${image.name}`,
+              width: 1024,
+              height: 1024,
             },
-          ],
-          color: 0x0069b5,
-        },
-      ],
-    });
+            footer: {
+              text: `Image is AI-generated (${env.IMAGE_GENERATION_MODEL})`,
+            },
+            color: embedColor,
+          },
+        ],
+      },
+      image,
+    );
   },
 } satisfies ExportedHandler<Env>;
