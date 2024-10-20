@@ -45,4 +45,4 @@ jobs:
           node-version: lts/*
           cache: npm
       - run: npm ci --prefer-offline
-      - run: npm run ci:types
+      - run: npm run types
