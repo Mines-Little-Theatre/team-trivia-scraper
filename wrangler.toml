@@ -9,7 +9,7 @@ preview_urls = false
 crons = ["0 20 * * SUN,WED"] # 1pm MST, 2pm MDT
 
 [vars]
-IMAGE_GENERATION_MODEL = "@cf/stabilityai/stable-diffusion-xl-base-1.0"
+IMAGE_GENERATION_MODEL = "@cf/black-forest-labs/flux-1-schnell"
 TEAM_TRIVIA_REGION_ID = "19"
 BOT_MESSAGE = "<@&750053568744259664> Trivia tonight! Woody’s Pizza at 9PM; react with <:friedrobert:1013539084792238081> if you’re coming!"
 

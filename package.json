@@ -15,12 +15,11 @@
     "ci:format": "prettier --check ."
   },
   "dependencies": {
-    "@jsquash/jpeg": "^1.4.0",
-    "@jsquash/png": "^3.0.1",
     "domutils": "^3.1.0",
     "htmlparser2": "^9.1.0",
     "itty-fetcher": "^0.9.4",
     "itty-router": "^5.0.18",
+    "js-base64": "^3.7.7",
     "slug": "^10.0.0"
   },
   "devDependencies": {
